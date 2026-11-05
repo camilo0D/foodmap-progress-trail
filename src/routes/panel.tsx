@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  EPICS, PROJECT_START, SPRINT_DAYS, SPRINT_GOALS, STORIES, TOTAL_POINTS, currentSprint,
+  EPICS, PROJECT_START, SPRINT_GOALS, STORIES, TOTAL_POINTS, currentSprint,
   type Status, type Story,
 } from "@/lib/backlog";
 import { computeInsights, statusOf, type ProgressRow, type Tone } from "@/lib/insights";
@@ -411,4 +411,3 @@ function NotesDialog({ story, initial, onClose, onSave }: { story: Story | null;
   );
 }
 
-void SPRINT_DAYS;
