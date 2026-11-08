@@ -18,7 +18,7 @@ import {
 } from "@/lib/backlog";
 import { computeInsights, statusOf, type ProgressRow, type Tone } from "@/lib/insights";
 
-export const Route = createFileRoute("/panel")({
+export const Route = createFileRoute("/_authenticated/panel")({
   head: () => ({
     meta: [
       { title: "Mi avance · FoodMap Móvil" },
