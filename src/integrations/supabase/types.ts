@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      management_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          detail: string
+          entry_date: string
+          id: string
+          kind: string
+          management_type: string
+          quantity: number
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          detail?: string
+          entry_date?: string
+          id?: string
+          kind: string
+          management_type: string
+          quantity?: number
+          status?: string
+          title: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          detail?: string
+          entry_date?: string
+          id?: string
+          kind?: string
+          management_type?: string
+          quantity?: number
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          currency: string
+          display_name: string
+          id: string
+          management_type: string | null
+          workspace_name: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          display_name?: string
+          id: string
+          management_type?: string | null
+          workspace_name?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          display_name?: string
+          id?: string
+          management_type?: string | null
+          workspace_name?: string
+        }
+        Relationships: []
+      }
       story_progress: {
         Row: {
           completed_at: string | null
