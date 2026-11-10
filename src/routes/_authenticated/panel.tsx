@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,17 +39,9 @@ const C = { done: "var(--chart-1)", in_progress: "var(--chart-2)", pending: "var
 function Panel() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/" });
-      else { setUserId(data.user.id); setEmail(data.user.email ?? ""); }
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) navigate({ to: "/" }); });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+  const { user } = Route.useRouteContext();
+  const userId = user.id;
+  const email = user.email ?? '';
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["progress", userId],
@@ -68,7 +60,7 @@ function Panel() {
       const now = new Date().toISOString();
       const { error } = await supabase.from("story_progress").upsert(
         {
-          user_id: userId!, story_id: p.story_id, status: p.status,
+          user_id: userId, story_id: p.story_id, status: p.status,
           notes: p.notes !== undefined ? p.notes : prev?.notes ?? null,
           completed_at: p.status === "done" ? (prev?.status === "done" ? prev.completed_at : now) : null,
           updated_at: now,
@@ -91,7 +83,13 @@ function Panel() {
       email={email}
       onSet={(story_id, status) => save.mutate({ story_id, status })}
       onNotes={(story_id, notes) => save.mutate({ story_id, status: statusOf(map, story_id), notes })}
-      onLogout={() => supabase.auth.signOut()}
+      onLogout={async () => {
+        await qc.cancelQueries();
+        qc.clear();
+        const { error } = await supabase.auth.signOut();
+        if (error) { toast.error('No se pudo cerrar la sesión'); return; }
+        await navigate({ to: '/auth', replace: true });
+      }}
     />
   );
 }
@@ -159,6 +157,7 @@ function Dashboard({ map, email, onSet, onNotes, onLogout }: {
           <h1 className="text-4xl md:text-5xl font-extrabold mt-1">FoodMap <span className="text-primary">Móvil</span></h1>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <Button variant="outline" size="sm" asChild><Link to="/administrar">Mi espacio</Link></Button>
           <span className="hidden sm:inline">{email}</span>
           <Button variant="outline" size="sm" onClick={onLogout}><LogOut className="size-4" /> Salir</Button>
         </div>
