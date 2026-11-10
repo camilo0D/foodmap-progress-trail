@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Keep private application pages under the shared `_authenticated` layout; it validates the user before loading so private data never flashes on public pages.
+- Store names and preferences in profiles, and purpose-scoped records in management_entries with owner-only RLS; this preserves privacy across accounts and purpose switches.
+- Keep management definitions and calculations in src/lib/management.ts and private operations in authenticated server functions; shared validation stays independently testable.
+- Preserve /panel as a separate project view so existing story progress is not mixed with general administration records.
