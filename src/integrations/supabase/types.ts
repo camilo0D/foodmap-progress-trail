@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_access_blocks: {
+        Row: {
+          created_at: string
+          feature: string
+          message: string
+          status: number
+        }
+        Insert: {
+          created_at?: string
+          feature: string
+          message: string
+          status: number
+        }
+        Update: {
+          created_at?: string
+          feature?: string
+          message?: string
+          status?: number
+        }
+        Relationships: []
+      }
       management_entries: {
         Row: {
           amount: number
@@ -109,6 +130,36 @@ export type Database = {
           status?: string
           story_id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workspace_advice: {
+        Row: {
+          context: string
+          generated_at: string | null
+          goals: string
+          id: string
+          management_type: string
+          recommendation: string
+          user_id: string
+        }
+        Insert: {
+          context?: string
+          generated_at?: string | null
+          goals?: string
+          id?: string
+          management_type: string
+          recommendation?: string
+          user_id: string
+        }
+        Update: {
+          context?: string
+          generated_at?: string | null
+          goals?: string
+          id?: string
+          management_type?: string
+          recommendation?: string
           user_id?: string
         }
         Relationships: []

@@ -14,7 +14,7 @@ export function ProfileForm({ profile, onSaved }: { profile: Profile; onSaved?: 
  const [workspace, setWorkspace] = useState(profile.workspace_name);
  const [purpose, setPurpose] = useState<ManagementType>(isManagementType(profile.management_type) ? profile.management_type : 'store');
  const [currency, setCurrency] = useState<'COP'|'USD'|'EUR'>(profile.currency === 'USD' || profile.currency === 'EUR' ? profile.currency : 'COP');
- const save = useMutation({ mutationFn: () => saveProfile({ data: { display_name: name, workspace_name: workspace, management_type: purpose, currency } }), onSuccess: async () => { await qc.invalidateQueries({ queryKey: ['workspace'] }); toast.success('Tu espacio está listo'); onSaved?.(); }, onError: e => toast.error(e.message) });
+ const save = useMutation({ mutationFn: () => saveProfile({ data: { display_name: name, workspace_name: workspace, management_type: purpose, currency } }), onSuccess: async () => { if (purpose !== profile.management_type) window.__lovableEvents?.track?.('project.management_selected', { management_type: purpose, source: 'profile' }); await qc.invalidateQueries({ queryKey: ['workspace'] }); toast.success('Tu espacio está listo'); onSaved?.(); }, onError: e => toast.error(e.message) });
  return <form className="space-y-5" onSubmit={e => { e.preventDefault(); save.mutate(); }}>
  <div className="space-y-2"><Label htmlFor="profile-name">Tu nombre</Label><Input id="profile-name" required maxLength={100} value={name} onChange={e => setName(e.target.value)}/></div>
  <div className="space-y-2"><Label>¿Qué quieres administrar?</Label><PurposePicker value={purpose} onChange={setPurpose}/></div>

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { saveEntry } from '@/lib/management.functions';
 import { MODULES, type Entry, type ManagementType } from '@/lib/management';
+import { becameCompleted } from '@/lib/advice';
 export function EntryDialog({ type, kind, entry, onClose }: { type: ManagementType; kind: string; entry: Entry | null; onClose: () => void }) {
  const module = MODULES[type].find(m => m.kind === kind);
  const qc = useQueryClient();
@@ -18,7 +19,7 @@ export function EntryDialog({ type, kind, entry, onClose }: { type: ManagementTy
  const [status, setStatus] = useState<'pending'|'in_progress'|'done'>(entry?.status === 'done' || entry?.status === 'in_progress' ? entry.status : 'pending');
  const [date, setDate] = useState(entry?.entry_date ?? new Date().toLocaleDateString('en-CA'));
  const [detail, setDetail] = useState(entry?.detail ?? '');
- const save = useMutation({ mutationFn: () => saveEntry({ data: { id: entry?.id, management_type: type, kind, title, amount: Number(amount), quantity: Number(quantity), status: module?.status ? status : 'done', entry_date: date, detail } }), onSuccess: async () => { await qc.invalidateQueries({ queryKey: ['workspace'] }); toast.success('Registro guardado'); onClose(); }, onError: e => toast.error(e.message) });
+ const save = useMutation({ mutationFn: () => saveEntry({ data: { id: entry?.id, management_type: type, kind, title, amount: Number(amount), quantity: Number(quantity), status: module?.status ? status : 'done', entry_date: date, detail } }), onSuccess: async () => { if (becameCompleted(entry?.status, module?.status ? status : 'done')) window.__lovableEvents?.track?.('project.management_entry_completed', { management_type: type, kind }); await qc.invalidateQueries({ queryKey: ['workspace'] }); toast.success('Registro guardado'); onClose(); }, onError: e => toast.error(e.message) });
  if (!module) return null;
  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle>{entry ? 'Editar' : 'Nuevo'} · {module.singular}</DialogTitle></DialogHeader>
  <form className="space-y-4" onSubmit={e => { e.preventDefault(); save.mutate(); }}>

@@ -32,6 +32,9 @@ export function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { display_name: name.trim(), workspace_name: workspace.trim(), management_type: purpose } } });
         if (error) throw error;
+        if (data.user && !data.user.identities?.length) throw new Error('Esta cuenta ya existe. Inicia sesión.');
+        window.__lovableEvents?.track?.('project.registration_completed', { management_type: purpose, confirmation_required: !data.session });
+        window.__lovableEvents?.track?.('project.management_selected', { management_type: purpose, source: 'registration' });
         if (data.session) await navigate({ to: '/administrar', replace: true });
         else setConfirmation(true);
       }

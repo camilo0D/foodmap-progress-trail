@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Layers3, LogOut, Settings2, Plus, Pencil, Trash2, Search, Store, FolderKanban, CalendarDays, Wallet, AlertCircle, Package, ArrowUpRight, ArrowDownRight, CircleCheck } from 'lucide-react';
+import { Layers3, LogOut, Settings2, Plus, Pencil, Trash2, Search, Store, FolderKanban, CalendarDays, Wallet, AlertCircle, Package, ArrowUpRight, ArrowDownRight, CircleCheck, Download, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,9 +14,11 @@ import { deleteEntry } from '@/lib/management.functions';
 import { TYPES, MODULES, summarize, monthTotals, isManagementType, type Entry, type Profile } from '@/lib/management';
 import { ProfileForm } from './profile-form';
 import { EntryDialog } from './entry-dialog';
+import { WorkspaceAdvice } from './workspace-advice';
+import type { Tables } from '@/integrations/supabase/types';
 const ICONS = { store: Store, projects: FolderKanban, services: CalendarDays, finance: Wallet };
 const STATUS = { pending: 'Pendiente', in_progress: 'En progreso', done: 'Hecho' };
-export function WorkspaceDashboard({ profile, entries }: { profile: Profile; entries: Entry[] }) {
+export function WorkspaceDashboard({ profile, entries, advice }: { profile: Profile; entries: Entry[]; advice: Tables<'workspace_advice'> | null }) {
  const navigate = useNavigate();
  const qc = useQueryClient();
  const [settings, setSettings] = useState(false);
@@ -25,6 +27,16 @@ export function WorkspaceDashboard({ profile, entries }: { profile: Profile; ent
  const [editor, setEditor] = useState<{ entry: Entry | null; kind: string } | null>(null);
  const [deleting, setDeleting] = useState<Entry | null>(null);
  const [loggingOut, setLoggingOut] = useState(false);
+ const chart = useRef<HTMLDivElement>(null);
+ const [exporting, setExporting] = useState(false);
+ const [pdf, setPdf] = useState<Blob | null>(null);
+ async function preparePdf() {
+  if (!isManagementType(profile.management_type)) return;
+  setExporting(true); setPdf(null);
+  try { const { createWorkspacePdf } = await import('@/lib/workspace-pdf'); setPdf(await createWorkspacePdf(profile, entries, profile.management_type, chart.current, advice)); }
+  catch { toast.error('No se pudo preparar el informe PDF.'); }
+  finally { setExporting(false); }
+ }
  const remove = useMutation({ mutationFn: (id: string) => deleteEntry({ data: { id } }), onSuccess: async () => { await qc.invalidateQueries({ queryKey: ['workspace'] }); setDeleting(null); toast.success('Registro eliminado'); }, onError: e => toast.error(e.message) });
  async function logout() {
   setLoggingOut(true);
@@ -63,9 +75,10 @@ export function WorkspaceDashboard({ profile, entries }: { profile: Profile; ent
  <header className="border-b border-border"><div className="max-w-7xl mx-auto px-5 py-5 flex flex-wrap items-center gap-3"><Link to="/administrar" className="font-display font-bold text-xl flex items-center gap-2 mr-auto"><Layers3 className="text-primary"/>Mi espacio</Link><span className="text-sm text-muted-foreground hidden sm:block">{profile.display_name}</span><Button variant="outline" size="sm" onClick={() => setSettings(true)}><Settings2 className="size-4"/>Mi perfil</Button><Button variant="ghost" size="sm" onClick={logout} disabled={loggingOut}><LogOut className="size-4"/>Salir</Button></div></header>
  <div className="max-w-7xl mx-auto px-5 py-8 space-y-8">
  <section className="flex flex-wrap items-center gap-4"><div className="mr-auto min-w-0"><div className="text-xs font-mono uppercase tracking-widest text-primary flex items-center gap-2 mb-2"><Icon className="size-4"/>{TYPES.find(t => t.id === type)?.label}</div><h1 className="text-3xl sm:text-4xl font-extrabold break-words">{profile.workspace_name}</h1></div>{type === 'projects' && <Button variant="outline" asChild><Link to="/panel">FoodMap Móvil<ArrowUpRight className="size-4"/></Link></Button>}</section>
- <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{cards.map(c => <div key={c.title} className="border border-border rounded-lg bg-card p-5 min-w-0"><div className="text-sm text-muted-foreground flex gap-2 items-center"><c.icon className="text-primary size-4 shrink-0"/>{c.title}</div><div className="font-display font-bold text-2xl mt-3 break-words">{c.value}</div></div>)}</section>
+  <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={exporting} onClick={preparePdf}><FileDown className="size-4"/>{exporting ? 'Preparando informe…' : 'Exportar informe PDF'}</Button>{pdf && <Button onClick={async () => { const { downloadPdf } = await import('@/lib/workspace-pdf'); downloadPdf(pdf); }}><Download className="size-4"/>Descargar PDF</Button>}</div>
+  <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{cards.map(c => <div key={c.title} className="border border-border rounded-lg bg-card p-5 min-w-0"><div className="text-sm text-muted-foreground flex gap-2 items-center"><c.icon className="text-primary size-4 shrink-0"/>{c.title}</div><div className="font-display font-bold text-2xl mt-3 break-words">{c.value}</div></div>)}</section>
  <section className="grid lg:grid-cols-[2fr_1fr] gap-8 border-y border-border py-7">
- <div className="min-w-0"><h2 className="font-bold text-lg mb-5">{type === 'projects' ? 'Estado de las tareas' : 'Ingresos y gastos · últimos 6 meses'}</h2>
+  <div ref={chart} className="min-w-0"><h2 className="font-bold text-lg mb-5">{type === 'projects' ? 'Estado de las tareas' : 'Ingresos y gastos · últimos 6 meses'}</h2>
  <ResponsiveContainer width="100%" height={220}><BarChart data={type === 'projects' ? ['pending','in_progress','done'].map(s => ({ name: STATUS[s as keyof typeof STATUS], Tareas: entries.filter(e => e.kind === 'task' && e.status === s).length })) : monthTotals(entries)}><CartesianGrid vertical={false} stroke="var(--border)"/><XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}/><YAxis allowDecimals={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} width={55}/><Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} /><Legend/>{type === 'projects' ? <Bar dataKey="Tareas" fill="var(--primary)" radius={[4,4,0,0]}/> : <><Bar dataKey="Ingresos" fill="var(--success)" radius={[4,4,0,0]}/><Bar dataKey="Gastos" fill="var(--primary)" radius={[4,4,0,0]}/></>}</BarChart></ResponsiveContainer>
  </div>
  <div className="space-y-4"><h2 className="font-bold text-lg">En foco</h2>{entries.length === 0 ? <p className="text-sm text-muted-foreground">Sin registros todavía.</p> : <>
@@ -79,7 +92,7 @@ export function WorkspaceDashboard({ profile, entries }: { profile: Profile; ent
  <div className="flex flex-wrap gap-1 border-b border-border mb-6" role="tablist" aria-label="Opciones de administración">{modules.map(m => <Button role="tab" aria-selected={active.kind === m.kind} key={m.kind} variant="ghost" className={`rounded-none border-b-2 ${active.kind === m.kind ? 'border-primary text-primary' : 'border-transparent text-muted-foreground'}`} onClick={() => { setKind(m.kind); setSearch(''); }}>{m.label}<span className="text-xs font-mono">{entries.filter(e => e.kind === m.kind).length}</span></Button>)}</div>
  <div className="flex flex-wrap gap-3 items-center mb-5"><h2 className="font-bold text-xl mr-auto">{active.label}</h2><div className="relative w-full sm:w-56"><Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/><Input aria-label="Buscar registros" className="pl-9" placeholder="Buscar…" value={search} onChange={e => setSearch(e.target.value)}/></div><Button onClick={() => setEditor({ entry: null, kind: active.kind })}><Plus className="size-4"/>Añadir {active.singular.toLowerCase()}</Button></div>
  <div role="tabpanel" className="divide-y divide-border">{filtered.map(e => <div key={e.id} className="flex items-start sm:items-center gap-3 py-4"><div className="flex-1 min-w-0"><div className="font-semibold break-words">{e.title}</div>{e.detail && <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words mt-1">{e.detail}</p>}<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">{active.dated && <span>{new Date(`${e.entry_date}T12:00:00`).toLocaleDateString('es-CO')}</span>}{active.quantity && <span className={e.quantity === 0 ? 'text-destructive' : ''}>{e.quantity} unidades</span>}{active.money && <span>{money(e.amount)}</span>}{active.status && <span className={e.status === 'done' ? 'text-success' : 'text-primary'}>{STATUS[e.status as keyof typeof STATUS]}</span>}</div></div><Button size="icon" variant="ghost" title="Editar registro" aria-label={`Editar ${e.title}`} onClick={() => setEditor({ entry: e, kind: e.kind })}><Pencil className="size-4"/></Button><Button size="icon" variant="ghost" title="Eliminar registro" aria-label={`Eliminar ${e.title}`} onClick={() => setDeleting(e)}><Trash2 className="size-4 text-destructive"/></Button></div>)}{!filtered.length && <div className="py-12 text-center text-muted-foreground">{search ? 'No hay resultados.' : `Sin ${active.label.toLowerCase()} todavía.`}</div>}</div>
- </section></div>
+  </section><WorkspaceAdvice key={`${type}-${profile.id}`} type={type} advice={advice}/></div>
  <Dialog open={settings} onOpenChange={setSettings}><DialogContent className="max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle>Mi perfil y preferencias</DialogTitle></DialogHeader><ProfileForm profile={profile} onSaved={() => { setKind(''); setSettings(false); }}/></DialogContent></Dialog>
  {editor && <EntryDialog key={`${editor.kind}-${editor.entry?.id ?? 'new'}`} type={type} kind={editor.kind} entry={editor.entry} onClose={() => setEditor(null)}/>}
  <AlertDialog open={!!deleting} onOpenChange={open => { if (!open && !remove.isPending) setDeleting(null); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>¿Eliminar este registro?</AlertDialogTitle><AlertDialogDescription>{deleting?.title}. No podrás recuperarlo.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={remove.isPending}>Cancelar</AlertDialogCancel><AlertDialogAction disabled={remove.isPending} onClick={e => { e.preventDefault(); if (deleting) remove.mutate(deleting.id); }}>{remove.isPending ? 'Eliminando…' : 'Eliminar'}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

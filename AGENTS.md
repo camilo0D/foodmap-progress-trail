@@ -33,3 +33,7 @@ use the editor.
 - Store names and preferences in profiles, and purpose-scoped records in management_entries with owner-only RLS; this preserves privacy across accounts and purpose switches.
 - Keep management definitions and calculations in src/lib/management.ts and private operations in authenticated server functions; shared validation stays independently testable.
 - Preserve /panel as a separate project view so existing story progress is not mixed with general administration records.
+- Keep AI advice purpose-scoped and owner-readable; send aggregate indicators instead of customer records to reduce disclosure.
+- Use request-local OpenAI Responses helpers in server-only modules and persist terminal access blocks so reloads cannot replay denied calls.
+- Generate management PDFs from data and chart captures in the browser; prepare before download to preserve mobile activation.
+- Emit custom analytics only in successful action handlers; use built-in page views and engagement for panel usage to avoid double counting.

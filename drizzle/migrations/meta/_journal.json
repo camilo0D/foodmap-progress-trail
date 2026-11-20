@@ -15,6 +15,13 @@
       "when": 1794155520814,
       "tag": "0001_profiles_and_management_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795149426354,
+      "tag": "0002_workspace_advice",
+      "breakpoints": true
     }
   ]
 }

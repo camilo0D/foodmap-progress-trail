@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.management_entry_completed": {
+      "event_schema_version": 1,
+      "description": "A new management record is saved as done, or an existing record transitions to done.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "management_type",
+          "kind"
+        ],
+        "properties": {
+          "management_type": {
+            "type": "string",
+            "enum": [
+              "store",
+              "projects",
+              "services",
+              "finance"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "product",
+              "sale",
+              "customer",
+              "order",
+              "expense",
+              "task",
+              "appointment",
+              "job",
+              "income",
+              "budget"
+            ]
+          }
+        }
+      }
+    },
+    "project.management_selected": {
+      "event_schema_version": 1,
+      "description": "A management choice is persisted at registration or when saving the profile with a different purpose.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "management_type",
+          "source"
+        ],
+        "properties": {
+          "management_type": {
+            "type": "string",
+            "enum": [
+              "store",
+              "projects",
+              "services",
+              "finance"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "registration",
+              "profile"
+            ]
+          }
+        }
+      }
+    },
+    "project.registration_completed": {
+      "event_schema_version": 1,
+      "description": "An email registration succeeds (confirmation may still be required).",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "management_type",
+          "confirmation_required"
+        ],
+        "properties": {
+          "management_type": {
+            "type": "string",
+            "enum": [
+              "store",
+              "projects",
+              "services",
+              "finance"
+            ]
+          },
+          "confirmation_required": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

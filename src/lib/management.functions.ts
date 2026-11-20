@@ -9,7 +9,9 @@ export const readWorkspace = createServerFn({ method: 'GET' }).middleware([requi
   if (error) throw new Error('No se pudo cargar tu perfil.');
   const { data: entries, error: entriesError } = await context.supabase.from('management_entries').select('*').eq('user_id', context.userId).eq('management_type', profile.management_type ?? 'projects').order('created_at', { ascending: false });
   if (entriesError) throw new Error('No se pudieron cargar tus registros.');
-  return { profile: profile as Profile, entries: entries ?? [] };
+  const { data: advice, error: adviceError } = await context.supabase.from('workspace_advice').select('*').eq('user_id', context.userId).eq('management_type', profile.management_type ?? 'projects').maybeSingle();
+  if (adviceError) throw new Error('No se pudieron cargar tus metas.');
+  return { profile: profile as Profile, entries: entries ?? [], advice };
 });
 export const saveProfile = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).inputValidator(z.object({ display_name: z.string().trim().min(1).max(100), workspace_name: z.string().trim().min(1).max(100), management_type: managementType, currency: z.enum(['COP','USD','EUR']) })).handler(async ({ data, context }) => {
   const { error } = await context.supabase.from('profiles').update(data).eq('id', context.userId);

@@ -16,5 +16,5 @@ export const Route = createFileRoute('/_authenticated/administrar')({
 });
 function WorkspacePage() {
  const { data } = useSuspenseQuery(workspaceQuery());
- return <WorkspaceDashboard profile={data.profile} entries={data.entries}/>;
+  return <WorkspaceDashboard profile={data.profile} entries={data.entries} advice={data.advice}/>;
 }
