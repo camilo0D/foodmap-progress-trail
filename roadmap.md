@@ -5,7 +5,7 @@
 - [x] Mantener el panel FoodMap y comprobar acceso, guardado y aislamiento.
 
 # Recomendaciones, analítica e informes
-- [ ] Metas y contexto privados por tipo de espacio con recomendaciones de Lovable AI.
-- [ ] Medir registros completados y elecciones; usar visitas y participación para los paneles.
-- [ ] Exportar resumen, progreso, registros y gráficas a PDF.
-- [ ] Comprobar recomendaciones reales, aislamiento, analítica e informe descargado.
+- [x] Metas y contexto privados por tipo de espacio con recomendaciones de Lovable AI.
+- [x] Medir registros completados y elecciones; usar visitas y participación para los paneles.
+- [x] Exportar resumen, progreso, registros y gráficas a PDF.
+- [x] Comprobar recomendación real guardada, reglas de privacidad, catálogo analítico e informe con tarea completada y gráfica; recepción de eventos pendiente del uso en la aplicación.

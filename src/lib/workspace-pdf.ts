@@ -22,7 +22,7 @@ export async function createWorkspacePdf(profile: Profile, entries: Entry[], typ
   if (chart) {
     const canvas = await html2canvas(chart, { scale: 2, useCORS: true, backgroundColor: null });
     const height = Math.min(95, 178 * canvas.height / canvas.width);
-    if (y + height > 277) { pdf.addPage(); y = 20; }
+    if (y + height + 16 > 277) { pdf.addPage(); y = 20; }
     write(type === 'projects' ? 'Estado de las tareas' : 'Ingresos y gastos · últimos 6 meses', 14);
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 16, y, 178, height); y += height + 12;
   }

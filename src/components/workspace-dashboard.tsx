@@ -15,6 +15,7 @@ import { TYPES, MODULES, summarize, monthTotals, isManagementType, type Entry, t
 import { ProfileForm } from './profile-form';
 import { EntryDialog } from './entry-dialog';
 import { WorkspaceAdvice } from './workspace-advice';
+import { downloadPdf } from '@/lib/workspace-pdf';
 import type { Tables } from '@/integrations/supabase/types';
 const ICONS = { store: Store, projects: FolderKanban, services: CalendarDays, finance: Wallet };
 const STATUS = { pending: 'Pendiente', in_progress: 'En progreso', done: 'Hecho' };
@@ -75,7 +76,7 @@ export function WorkspaceDashboard({ profile, entries, advice }: { profile: Prof
  <header className="border-b border-border"><div className="max-w-7xl mx-auto px-5 py-5 flex flex-wrap items-center gap-3"><Link to="/administrar" className="font-display font-bold text-xl flex items-center gap-2 mr-auto"><Layers3 className="text-primary"/>Mi espacio</Link><span className="text-sm text-muted-foreground hidden sm:block">{profile.display_name}</span><Button variant="outline" size="sm" onClick={() => setSettings(true)}><Settings2 className="size-4"/>Mi perfil</Button><Button variant="ghost" size="sm" onClick={logout} disabled={loggingOut}><LogOut className="size-4"/>Salir</Button></div></header>
  <div className="max-w-7xl mx-auto px-5 py-8 space-y-8">
  <section className="flex flex-wrap items-center gap-4"><div className="mr-auto min-w-0"><div className="text-xs font-mono uppercase tracking-widest text-primary flex items-center gap-2 mb-2"><Icon className="size-4"/>{TYPES.find(t => t.id === type)?.label}</div><h1 className="text-3xl sm:text-4xl font-extrabold break-words">{profile.workspace_name}</h1></div>{type === 'projects' && <Button variant="outline" asChild><Link to="/panel">FoodMap Móvil<ArrowUpRight className="size-4"/></Link></Button>}</section>
-  <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={exporting} onClick={preparePdf}><FileDown className="size-4"/>{exporting ? 'Preparando informe…' : 'Exportar informe PDF'}</Button>{pdf && <Button onClick={async () => { const { downloadPdf } = await import('@/lib/workspace-pdf'); downloadPdf(pdf); }}><Download className="size-4"/>Descargar PDF</Button>}</div>
+  <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={exporting} onClick={preparePdf}><FileDown className="size-4"/>{exporting ? 'Preparando informe…' : 'Exportar informe PDF'}</Button>{pdf && <Button onClick={() => downloadPdf(pdf)}><Download className="size-4"/>Descargar PDF</Button>}</div>
   <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{cards.map(c => <div key={c.title} className="border border-border rounded-lg bg-card p-5 min-w-0"><div className="text-sm text-muted-foreground flex gap-2 items-center"><c.icon className="text-primary size-4 shrink-0"/>{c.title}</div><div className="font-display font-bold text-2xl mt-3 break-words">{c.value}</div></div>)}</section>
  <section className="grid lg:grid-cols-[2fr_1fr] gap-8 border-y border-border py-7">
   <div ref={chart} className="min-w-0"><h2 className="font-bold text-lg mb-5">{type === 'projects' ? 'Estado de las tareas' : 'Ingresos y gastos · últimos 6 meses'}</h2>
