@@ -36,4 +36,5 @@ use the editor.
 - Keep AI advice purpose-scoped and owner-readable; send aggregate indicators instead of customer records to reduce disclosure.
 - Use request-local OpenAI Responses helpers in server-only modules and persist terminal access blocks so reloads cannot replay denied calls.
 - Generate management PDFs from data and chart captures in the browser; prepare before download to preserve mobile activation.
+- Keep appearance in a shared provider using semantic CSS tokens; automatic accents follow the active management type and manual appearance preferences persist on the device.
 - Emit custom analytics only in successful action handlers; use built-in page views and engagement for panel usage to avoid double counting.

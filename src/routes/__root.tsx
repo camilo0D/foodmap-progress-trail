@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from '@/integrations/supabase/client';
+import { AppearanceProvider } from '@/components/appearance';
 
 function NotFoundComponent() {
   return (
@@ -134,9 +135,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AppearanceProvider>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors position="top-center" />
+      </AppearanceProvider>
     </QueryClientProvider>
   );
 }

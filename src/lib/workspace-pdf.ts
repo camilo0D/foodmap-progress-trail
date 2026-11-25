@@ -4,6 +4,7 @@ export async function createWorkspacePdf(profile: Profile, entries: Entry[], typ
   const [{ jsPDF }, { default: html2canvas }] = await Promise.all([import('jspdf'), import('html2canvas-pro')]);
   const pdf = new jsPDF();
   const total = summarize(entries);
+  const tracked = entries.filter(e => MODULES[type].some(m => m.kind === e.kind && m.status));
   let y = 20;
   function write(text: string, size = 11) {
     pdf.setFontSize(size);
@@ -15,11 +16,13 @@ export async function createWorkspacePdf(profile: Profile, entries: Entry[], typ
   write(profile.workspace_name, 20);
   write(`${TYPES.find(t => t.id === type)?.label} · ${new Date().toLocaleDateString('es-CO')}`);
   write('Resumen del espacio', 15);
-  write(`Registros: ${entries.length} | Completados: ${entries.filter(e => e.status === 'done').length} | Pendientes: ${entries.filter(e => e.status !== 'done').length}`);
+  write(`Registros: ${entries.length}`);
+  if (tracked.length) write(`Completados: ${tracked.filter(e => e.status === 'done').length} | Pendientes: ${tracked.filter(e => e.status !== 'done').length}`);
   write(`Ingresos: ${money(total.income)} | Gastos: ${money(total.expense)} | Balance: ${money(total.balance)}`);
   if (type === 'store') write(`Inventario: ${total.stock} unidades`);
   if (type === 'projects') write(`Tareas: ${total.completed}/${total.tasks} completadas (${total.tasks ? Math.round(total.completed / total.tasks * 100) : 0}%)`);
   if (chart) {
+    await document.fonts.ready;
     const canvas = await html2canvas(chart, { scale: 2, useCORS: true, backgroundColor: null });
     const height = Math.min(95, 178 * canvas.height / canvas.width);
     if (y + height + 16 > 277) { pdf.addPage(); y = 20; }
@@ -27,7 +30,7 @@ export async function createWorkspacePdf(profile: Profile, entries: Entry[], typ
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 16, y, 178, height); y += height + 12;
   }
   if (advice?.goals) { write('Metas', 15); write(advice.goals); }
-  if (advice?.recommendation) { write('Recomendaciones · Lovable AI', 15); write(advice.recommendation); }
+  if (advice?.recommendation) { write('Recomendaciones · Lovable AI', 15); write(advice.recommendation.replace(/\*\*/g, '').replace(/^#{1,6}\s/gm, '')); }
   for (const module of MODULES[type]) {
     const rows = entries.filter(e => e.kind === module.kind);
     write(`${module.label} (${rows.length})`, 15);

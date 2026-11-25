@@ -1,4 +1,6 @@
 # Registro y administración
+- [ ] Apariencia clara, oscura y automática con tonalidad variable según el espacio.
+- [ ] Verificar y mejorar descarga PDF y recomendaciones con datos reales.
 - [x] Guardar perfiles y registros privados por persona.
 - [x] Registro con nombre y elección de propósito; completar perfil para cuentas existentes y Google.
 - [x] Opciones y registros de tienda, proyectos, servicios y finanzas con indicadores.
